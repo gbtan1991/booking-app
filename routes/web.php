@@ -9,8 +9,7 @@ Route::get('/book', \App\Livewire\BookingWizard::class)->name('book');
 
 // ── Auth ──────────────────────────────────────────────────────────────────
 Route::middleware('guest')->group(function () {
-    Route::get('/login',    \App\Livewire\Auth\Login::class)->name('login');
-    Route::get('/register', \App\Livewire\Auth\Register::class)->name('register');
+    Route::get('/login', \App\Livewire\Auth\Login::class)->name('login');
 });
 
 Route::post('/logout', function () {
@@ -20,14 +19,10 @@ Route::post('/logout', function () {
     return redirect('/');
 })->middleware('auth')->name('logout');
 
-// ── Customer ──────────────────────────────────────────────────────────────
-Route::middleware(['auth'])->group(function () {
-    Route::get('/dashboard', \App\Livewire\Customer\BookingHistory::class)->name('customer.dashboard');
-});
-
 // ── Admin ─────────────────────────────────────────────────────────────────
 Route::middleware(['auth', \App\Http\Middleware\EnsureAdmin::class])
     ->prefix('admin')
     ->group(function () {
-        Route::get('/', \App\Livewire\Admin\BookingDashboard::class)->name('admin.dashboard');
+        Route::get('/',      \App\Livewire\Admin\Dashboard::class)->name('admin.dashboard');
+        Route::get('/users', \App\Livewire\Admin\UserManager::class)->name('admin.users');
     });

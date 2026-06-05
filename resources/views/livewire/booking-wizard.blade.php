@@ -7,9 +7,7 @@
 
     {{-- ══════════════════════════ PROGRESS BAR ══════════════════════════ --}}
     @if ($step < 5)
-    @php
-        $steps = ['Service', 'Date', 'Time', 'Details'];
-    @endphp
+    @php $steps = ['Service', 'Date', 'Time', 'Details']; @endphp
     <div class="flex items-center gap-2 mb-8 max-w-lg mx-auto px-2">
         @foreach ($steps as $i => $label)
             @php $num = $i + 1; @endphp
@@ -94,7 +92,6 @@
     <div class="max-w-2xl mx-auto">
         <div class="bg-white rounded-2xl border border-stone-200 shadow-sm overflow-hidden">
 
-            {{-- Selected service pill --}}
             @if ($this->selectedServiceDetail)
             <div class="px-6 pt-6 pb-0">
                 <div class="inline-flex items-center gap-2 bg-stone-50 border border-stone-100 rounded-xl px-3 py-2 text-xs text-stone-600 mb-5">
@@ -114,7 +111,6 @@
                 <h3 class="text-lg font-bold text-stone-900 mb-1">Pick a date</h3>
                 <p class="text-sm text-stone-500 mb-6">Next 30 weekdays — Sundays excluded</p>
 
-                {{-- Month groups --}}
                 @php
                     $grouped = collect($this->calendarDays)->groupBy(fn ($d) => $d['month']);
                 @endphp
@@ -189,47 +185,36 @@
                     </span>
                 </p>
 
-                <div wire:loading.class="opacity-40 pointer-events-none" wire:target="selectDate">
-                    @if (count($this->availableSlots) > 0)
-                    <div class="grid grid-cols-4 sm:grid-cols-5 gap-2">
-                        @foreach ($this->availableSlots as $slot)
-                        <button
-                            type="button"
-                            wire:click="selectSlot('{{ $slot }}')"
-                            wire:key="slot-{{ $slot }}"
-                            @class([
-                                'py-3 rounded-xl border text-sm font-semibold transition-all duration-100 focus:outline-none focus:ring-2 focus:ring-stone-900 focus:ring-offset-1',
-                                'border-stone-900 bg-stone-900 text-white shadow-md' => $selectedSlot === $slot,
-                                'border-stone-200 text-stone-700 hover:border-stone-900 hover:bg-stone-50' => $selectedSlot !== $slot,
-                            ])
-                        >{{ $slot }}</button>
-                        @endforeach
-                    </div>
-                    @else
-                    <div class="text-center py-12">
-                        <svg class="w-10 h-10 mx-auto mb-3 text-stone-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                        </svg>
-                        <p class="text-sm font-semibold text-stone-500">Fully booked</p>
-                        <p class="text-xs text-stone-400 mt-1">No slots left for this date.</p>
-                        <button type="button" wire:click="goToStep(2)"
-                                class="mt-4 text-sm font-semibold text-stone-900 underline underline-offset-2">
-                            Choose another date
-                        </button>
-                    </div>
-                    @endif
+                @if (count($this->availableTimes) > 0)
+                <div class="grid grid-cols-4 sm:grid-cols-5 gap-2">
+                    @foreach ($this->availableTimes as $slot)
+                    <button
+                        type="button"
+                        wire:click="selectTime('{{ $slot }}')"
+                        wire:key="slot-{{ $slot }}"
+                        @class([
+                            'py-3 rounded-xl border text-sm font-semibold transition-all duration-100 focus:outline-none focus:ring-2 focus:ring-stone-900 focus:ring-offset-1',
+                            'border-stone-900 bg-stone-900 text-white shadow-md' => $selectedTime === $slot,
+                            'border-stone-200 text-stone-700 hover:border-stone-900 hover:bg-stone-50' => $selectedTime !== $slot,
+                        ])
+                    >{{ $slot }}</button>
+                    @endforeach
                 </div>
-
-                <div wire:loading wire:target="selectDate">
-                    <div class="flex justify-center py-8">
-                        <svg class="animate-spin w-6 h-6 text-stone-400" fill="none" viewBox="0 0 24 24">
-                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
-                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
-                        </svg>
-                    </div>
+                @else
+                <div class="text-center py-12">
+                    <svg class="w-10 h-10 mx-auto mb-3 text-stone-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    <p class="text-sm font-semibold text-stone-500">Fully booked</p>
+                    <p class="text-xs text-stone-400 mt-1">No slots left for this date.</p>
+                    <button type="button" wire:click="goToStep(2)"
+                            class="mt-4 text-sm font-semibold text-stone-900 underline underline-offset-2">
+                        Choose another date
+                    </button>
                 </div>
+                @endif
 
-                @error('selectedSlot')
+                @error('selectedTime')
                 <p class="mt-4 text-sm text-red-500">{{ $message }}</p>
                 @enderror
             </div>
@@ -245,7 +230,7 @@
                 <button
                     type="button"
                     wire:click="goToStep(4)"
-                    {{ $selectedSlot ? '' : 'disabled' }}
+                    {{ $selectedTime ? '' : 'disabled' }}
                     class="inline-flex items-center gap-2 bg-stone-900 text-white px-6 py-2.5 rounded-full text-sm font-semibold hover:bg-stone-700 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
                 >
                     Continue
@@ -263,7 +248,7 @@
         <div class="bg-white rounded-2xl border border-stone-200 shadow-sm overflow-hidden">
             <div class="p-6 sm:p-8">
 
-                {{-- Booking summary --}}
+                {{-- Booking summary pill --}}
                 <div class="flex flex-wrap gap-2 mb-7 p-4 bg-stone-50 rounded-xl border border-stone-100">
                     <div class="flex items-center gap-1.5 text-xs font-semibold text-stone-700 bg-white border border-stone-200 rounded-lg px-3 py-1.5">
                         <svg class="w-3.5 h-3.5 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -281,7 +266,7 @@
                         <svg class="w-3.5 h-3.5 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
                         </svg>
-                        {{ $selectedSlot }}
+                        {{ $selectedTime }}
                     </div>
                 </div>
 
@@ -290,33 +275,33 @@
                 <div class="space-y-4">
                     <div>
                         <label class="block text-xs font-bold text-stone-600 mb-1.5 uppercase tracking-wider">Full Name</label>
-                        <input type="text" wire:model="name" placeholder="Marie Dupont" autocomplete="name"
+                        <input type="text" wire:model="customer_name" placeholder="Marie Dupont" autocomplete="name"
                                class="w-full border border-stone-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900 transition placeholder-stone-300">
-                        @error('name') <p class="mt-1 text-xs text-red-500">{{ $message }}</p> @enderror
+                        @error('customer_name') <p class="mt-1 text-xs text-red-500">{{ $message }}</p> @enderror
                     </div>
 
                     <div>
                         <label class="block text-xs font-bold text-stone-600 mb-1.5 uppercase tracking-wider">Email Address</label>
-                        <input type="email" wire:model="email" placeholder="marie@example.com" autocomplete="email"
+                        <input type="email" wire:model="customer_email" placeholder="marie@example.com" autocomplete="email"
                                class="w-full border border-stone-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900 transition placeholder-stone-300">
-                        @error('email') <p class="mt-1 text-xs text-red-500">{{ $message }}</p> @enderror
+                        @error('customer_email') <p class="mt-1 text-xs text-red-500">{{ $message }}</p> @enderror
                     </div>
 
                     <div>
                         <label class="block text-xs font-bold text-stone-600 mb-1.5 uppercase tracking-wider">Phone Number</label>
-                        <input type="tel" wire:model="phone" placeholder="+41 79 123 45 67" autocomplete="tel"
+                        <input type="tel" wire:model="customer_telephone" placeholder="+41 79 123 45 67" autocomplete="tel"
                                class="w-full border border-stone-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900 transition placeholder-stone-300">
-                        @error('phone') <p class="mt-1 text-xs text-red-500">{{ $message }}</p> @enderror
+                        @error('customer_telephone') <p class="mt-1 text-xs text-red-500">{{ $message }}</p> @enderror
                     </div>
 
                     <div>
                         <label class="block text-xs font-bold text-stone-600 mb-1.5 uppercase tracking-wider">
                             Notes <span class="font-normal text-stone-400 normal-case tracking-normal">(optional)</span>
                         </label>
-                        <textarea wire:model="notes" rows="3"
+                        <textarea wire:model="customer_notes" rows="3"
                                   placeholder="Anything helpful to know before your appointment…"
                                   class="w-full border border-stone-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900 transition placeholder-stone-300 resize-none"></textarea>
-                        @error('notes') <p class="mt-1 text-xs text-red-500">{{ $message }}</p> @enderror
+                        @error('customer_notes') <p class="mt-1 text-xs text-red-500">{{ $message }}</p> @enderror
                     </div>
 
                     @error('rate_limit')
@@ -381,11 +366,11 @@
                 </div>
                 <div class="flex justify-between">
                     <span class="text-stone-500">Time</span>
-                    <span class="font-semibold text-stone-900">{{ $selectedSlot }}</span>
+                    <span class="font-semibold text-stone-900">{{ $selectedTime }}</span>
                 </div>
                 <div class="flex justify-between">
                     <span class="text-stone-500">Name</span>
-                    <span class="font-semibold text-stone-900">{{ $name }}</span>
+                    <span class="font-semibold text-stone-900">{{ $customer_name }}</span>
                 </div>
                 <div class="border-t border-stone-200 pt-2.5 flex justify-between">
                     <span class="text-stone-500">Status</span>
@@ -395,23 +380,10 @@
                 </div>
             </div>
 
-            <div class="flex flex-wrap gap-3 justify-center">
-                @auth
-                <a href="{{ route('customer.dashboard') }}"
-                   class="inline-flex items-center gap-2 bg-stone-900 text-white px-6 py-3 rounded-full text-sm font-semibold hover:bg-stone-700 transition-all">
-                    View my bookings
-                </a>
-                @else
-                <a href="{{ route('register') }}"
-                   class="inline-flex items-center gap-2 bg-stone-900 text-white px-6 py-3 rounded-full text-sm font-semibold hover:bg-stone-700 transition-all">
-                    Create account to track
-                </a>
-                @endauth
-                <a href="{{ route('home') }}"
-                   class="inline-flex items-center gap-2 border border-stone-200 text-stone-700 px-6 py-3 rounded-full text-sm font-semibold hover:bg-stone-50 transition-all">
-                    Back to home
-                </a>
-            </div>
+            <a href="{{ route('home') }}"
+               class="inline-flex items-center gap-2 bg-stone-900 text-white px-6 py-3 rounded-full text-sm font-semibold hover:bg-stone-700 transition-all">
+                Back to home
+            </a>
         </div>
     </div>
     @endif

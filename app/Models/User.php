@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -15,9 +14,10 @@ class User extends Authenticatable
 
     protected $fillable = [
         'name',
+        'position',
+        'system_role',
         'email',
         'password',
-        'role',
     ];
 
     protected $hidden = [
@@ -31,24 +31,5 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password'          => 'hashed',
         ];
-    }
-
-    // ── Role helpers ──────────────────────────────────────────────────────
-
-    public function isAdmin(): bool
-    {
-        return $this->role === 'admin';
-    }
-
-    public function isCustomer(): bool
-    {
-        return $this->role === 'customer';
-    }
-
-    // ── Relationships ─────────────────────────────────────────────────────
-
-    public function bookings(): HasMany
-    {
-        return $this->hasMany(Booking::class);
     }
 }
