@@ -31,11 +31,34 @@
                 <a href="/#how-it-works" class="hover:text-stone-900 transition-colors">How it works</a>
                 <a href="/#services" class="hover:text-stone-900 transition-colors">Services</a>
                 <a href="/#booking" class="hover:text-stone-900 transition-colors">Book now</a>
-                <a href="/admin" class="text-stone-400 hover:text-stone-600 transition-colors text-xs">Admin</a>
+                @auth
+                    @if(auth()->user()->isCustomer())
+                        <a href="{{ route('customer.dashboard') }}" class="hover:text-stone-900 transition-colors">My Bookings</a>
+                    @endif
+                    @if(auth()->user()->isAdmin())
+                        <a href="{{ route('admin.dashboard') }}" class="text-stone-400 hover:text-stone-600 transition-colors">Admin</a>
+                    @endif
+                    <form method="POST" action="{{ route('logout') }}" class="inline">
+                        @csrf
+                        <button type="submit" class="text-stone-400 hover:text-stone-600 transition-colors">Sign out</button>
+                    </form>
+                @else
+                    <a href="{{ route('login') }}" class="hover:text-stone-900 transition-colors">Sign in</a>
+                @endauth
             </nav>
-            <a href="/#booking" class="md:hidden text-sm font-medium bg-stone-900 text-white px-4 py-2 rounded-full">
-                Book
-            </a>
+            <div class="md:hidden flex items-center gap-2">
+                @auth
+                    <a href="{{ auth()->user()->isAdmin() ? route('admin.dashboard') : route('customer.dashboard') }}"
+                       class="text-sm font-medium text-stone-600 px-3 py-2">
+                        Dashboard
+                    </a>
+                @else
+                    <a href="{{ route('login') }}" class="text-sm font-medium text-stone-600 px-3 py-2">Sign in</a>
+                @endauth
+                <a href="/#booking" class="text-sm font-medium bg-stone-900 text-white px-4 py-2 rounded-full">
+                    Book
+                </a>
+            </div>
         </div>
     </header>
 

@@ -38,6 +38,15 @@ class BookingWizard extends Component
 
     public string $service = 'General Consultation';
 
+    public function mount(): void
+    {
+        // Pre-fill contact details if the customer is already logged in
+        if ($user = auth()->user()) {
+            $this->name  = $user->name;
+            $this->email = $user->email;
+        }
+    }
+
     // All available slots the business offers
     protected array $allSlots = [
         '08:00', '08:30', '09:00', '09:30', '10:00', '10:30',
@@ -158,6 +167,7 @@ class BookingWizard extends Component
                 }
 
                 Booking::create([
+                    'user_id'      => auth()->id(), // null for guests
                     'name'         => strip_tags($this->name),
                     'email'        => $this->email,
                     'phone'        => $this->phone,
