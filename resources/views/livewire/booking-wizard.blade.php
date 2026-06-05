@@ -414,7 +414,7 @@
                 </div>
 
                 <div class="flex flex-col sm:flex-row gap-3 justify-center">
-                    <a href="{{ route('book') }}"
+                    <a href="{{ route('home') }}"
                        class="inline-flex items-center justify-center gap-2 border border-stone-200 text-stone-700 px-6 py-3 rounded-full text-sm font-semibold hover:bg-stone-50 transition-all">
                         Book another
                     </a>

@@ -28,14 +28,13 @@ class Register extends Component
             'name'     => $this->name,
             'email'    => $this->email,
             'password' => $this->password,
-            'role'     => 'customer',
         ]);
 
         event(new Registered($user));
         Auth::login($user, remember: false);
         session()->regenerate();
 
-        $this->redirect(route('customer.dashboard'), navigate: true);
+        $this->redirect(route('admin.dashboard'), navigate: true);
     }
 
     public function render()
