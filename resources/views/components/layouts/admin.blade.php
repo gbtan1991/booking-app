@@ -27,6 +27,13 @@
                 </svg>
                 Dashboard
             </a>
+            <a href="/admin/services"
+               class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors {{ str_starts_with($path, 'admin/services') ? 'bg-stone-800 text-white' : 'text-stone-400 hover:bg-stone-800 hover:text-white' }}">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                </svg>
+                Services
+            </a>
             <a href="/admin/users"
                class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors {{ str_starts_with($path, 'admin/users') ? 'bg-stone-800 text-white' : 'text-stone-400 hover:bg-stone-800 hover:text-white' }}">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

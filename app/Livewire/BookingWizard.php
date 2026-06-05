@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Models\Book;
+use App\Models\Service;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Validator;
@@ -19,7 +20,7 @@ class BookingWizard extends Component
     // Steps: 1=Service  2=Date  3=Time  4=Details  5=Confirmed
     public int $step = 1;
 
-    // Step 1
+    // Step 1 — stores the service name for display in later steps
     #[Url(as: 'service')]
     public string $selectedService = '';
 
@@ -51,46 +52,35 @@ class BookingWizard extends Component
         '17:00',
     ];
 
-    public const SERVICES = [
-        'General Consultation',
-        'Strategy Session',
-        'Quick Review',
-    ];
-
-    public const SERVICE_DETAILS = [
-        [
-            'name'        => 'General Consultation',
-            'duration'    => '60 min',
-            'price'       => 'CHF 200',
-            'description' => 'Expert advice tailored to your specific business needs and challenges.',
-            'icon'        => 'M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z',
-        ],
-        [
-            'name'        => 'Strategy Session',
-            'duration'    => '90 min',
-            'price'       => 'CHF 350',
-            'description' => 'Deep-dive analysis and actionable long-term strategic planning.',
-            'icon'        => 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z',
-        ],
-        [
-            'name'        => 'Quick Review',
-            'duration'    => '30 min',
-            'price'       => 'CHF 120',
-            'description' => 'A focused audit of a single process, document, or deliverable.',
-            'icon'        => 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4',
-        ],
-    ];
-
     // ── Mount ─────────────────────────────────────────────────────────────
 
     public function mount(): void
     {
-        if ($this->selectedService && in_array($this->selectedService, self::SERVICES, true)) {
+        // If a valid service name arrives via URL, skip to date step
+        if ($this->selectedService && $this->serviceNames()->contains($this->selectedService)) {
             $this->step = 2;
         }
     }
 
     // ── Computed properties ───────────────────────────────────────────────
+
+    #[Computed]
+    public function services()
+    {
+        return Service::orderBy('name')->get();
+    }
+
+    #[Computed]
+    public function serviceNames()
+    {
+        return $this->services->pluck('name');
+    }
+
+    #[Computed]
+    public function selectedServiceModel(): ?Service
+    {
+        return $this->services->firstWhere('name', $this->selectedService);
+    }
 
     #[Computed]
     public function calendarDays(): array
@@ -125,22 +115,11 @@ class BookingWizard extends Component
         );
     }
 
-    #[Computed]
-    public function selectedServiceDetail(): ?array
-    {
-        foreach (self::SERVICE_DETAILS as $detail) {
-            if ($detail['name'] === $this->selectedService) {
-                return $detail;
-            }
-        }
-        return null;
-    }
-
     // ── Step navigation ───────────────────────────────────────────────────
 
     public function selectService(string $service): void
     {
-        if (! in_array($service, self::SERVICES, true)) {
+        if (! $this->serviceNames()->contains($service)) {
             return;
         }
         $this->selectedService = $service;
@@ -183,7 +162,6 @@ class BookingWizard extends Component
 
     public function submitBooking(): void
     {
-        // Rate limit: 5 attempts per IP per 10 minutes
         $rateLimitKey = 'book:' . request()->ip();
 
         if (RateLimiter::tooManyAttempts($rateLimitKey, 5)) {
@@ -192,10 +170,10 @@ class BookingWizard extends Component
             return;
         }
 
-        // Validate contact fields
         $this->validate();
 
-        // Hard-validate service, date, time server-side (prevents tampered state)
+        // Server-side guard: service must exist in DB, date must be future, time must be valid
+        $validServiceNames = Service::pluck('name')->implode(',');
         $extra = Validator::make(
             [
                 'service' => $this->selectedService,
@@ -203,19 +181,18 @@ class BookingWizard extends Component
                 'time'    => $this->selectedTime,
             ],
             [
-                'service' => ['required', 'string', 'in:' . implode(',', self::SERVICES)],
+                'service' => ['required', 'string', 'in:' . $validServiceNames],
                 'date'    => ['required', 'date', 'after:today'],
                 'time'    => ['required', 'string', 'in:' . implode(',', self::TIME_SLOTS)],
             ]
         );
 
         if ($extra->fails()) {
-            $this->addError('selectedDate', 'Invalid booking data detected. Please start over.');
+            $this->addError('selectedDate', 'Invalid booking data. Please start over.');
             $this->step = 1;
             return;
         }
 
-        // Atomic slot reservation with pessimistic locking
         try {
             DB::transaction(function () {
                 $conflict = Book::where('date', $this->selectedDate)
@@ -231,14 +208,14 @@ class BookingWizard extends Component
                 }
 
                 Book::create([
-                    'service'              => $this->selectedService,
-                    'date'                 => $this->selectedDate,
-                    'time'                 => $this->selectedTime,
-                    'customer_name'        => strip_tags($this->customer_name),
-                    'customer_email'       => $this->customer_email,
-                    'customer_telephone'   => strip_tags($this->customer_telephone),
-                    'customer_notes'       => strip_tags($this->customer_notes ?? ''),
-                    'status'               => 'current',
+                    'service'            => $this->selectedService,
+                    'date'               => $this->selectedDate,
+                    'time'               => $this->selectedTime,
+                    'customer_name'      => strip_tags($this->customer_name),
+                    'customer_email'     => $this->customer_email,
+                    'customer_telephone' => strip_tags($this->customer_telephone),
+                    'customer_notes'     => strip_tags($this->customer_notes ?? ''),
+                    'status'             => 'current',
                 ]);
             });
         } catch (ValidationException $e) {

@@ -27,32 +27,25 @@
                 </span>
                 <span class="font-semibold tracking-tight text-stone-900">SwissBook</span>
             </a>
-            <nav class="hidden md:flex items-center gap-6 text-sm font-medium text-stone-600">
-                <a href="/#how-it-works" class="hover:text-stone-900 transition-colors">How it works</a>
-                <a href="/#services" class="hover:text-stone-900 transition-colors">Services</a>
-                <a href="{{ route('book') }}" class="hover:text-stone-900 transition-colors">Book now</a>
-                @auth
-                    <a href="{{ route('admin.dashboard') }}" class="text-stone-400 hover:text-stone-600 transition-colors">Admin</a>
-                    <form method="POST" action="{{ route('logout') }}" class="inline">
-                        @csrf
-                        <button type="submit" class="text-stone-400 hover:text-stone-600 transition-colors">Sign out</button>
-                    </form>
-                @else
-                    <a href="{{ route('login') }}" class="hover:text-stone-900 transition-colors">Sign in</a>
-                @endauth
-            </nav>
-            <div class="md:hidden flex items-center gap-2">
+            <div class="flex items-center gap-3">
                 @auth
                     <a href="{{ route('admin.dashboard') }}"
-                       class="text-sm font-medium text-stone-600 px-3 py-2">
-                        Admin
+                       class="text-sm font-medium text-stone-500 hover:text-stone-900 transition-colors">
+                        Admin panel
                     </a>
+                    <form method="POST" action="{{ route('logout') }}" class="inline">
+                        @csrf
+                        <button type="submit"
+                                class="text-sm font-semibold border border-stone-200 text-stone-600 hover:bg-stone-50 px-4 py-2 rounded-full transition-colors">
+                            Sign out
+                        </button>
+                    </form>
                 @else
-                    <a href="{{ route('login') }}" class="text-sm font-medium text-stone-600 px-3 py-2">Sign in</a>
+                    <a href="{{ route('login') }}"
+                       class="text-sm font-semibold border border-stone-200 text-stone-600 hover:bg-stone-50 px-4 py-2 rounded-full transition-colors">
+                        Admin sign in
+                    </a>
                 @endauth
-                <a href="{{ route('book') }}" class="text-sm font-medium bg-stone-900 text-white px-4 py-2 rounded-full">
-                    Book
-                </a>
             </div>
         </div>
     </header>

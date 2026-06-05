@@ -52,35 +52,44 @@
             <p class="text-stone-500 text-sm mt-2">Choose the service that best fits your needs.</p>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            @foreach (\App\Livewire\BookingWizard::SERVICE_DETAILS as $svc)
+        @if ($this->services->isEmpty())
+        <div class="text-center py-16 text-stone-400">
+            <svg class="w-10 h-10 mx-auto mb-3 text-stone-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2"/>
+            </svg>
+            <p class="text-sm font-semibold">No services available yet.</p>
+            <p class="text-xs mt-1">Please check back soon.</p>
+        </div>
+        @else
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            @foreach ($this->services as $svc)
             <button
                 type="button"
-                wire:click="selectService('{{ $svc['name'] }}')"
-                wire:key="svc-{{ Str::slug($svc['name']) }}"
+                wire:click="selectService('{{ $svc->name }}')"
+                wire:key="svc-{{ $svc->id }}"
                 wire:loading.class="opacity-50 cursor-wait"
-                class="group text-left bg-white border-2 rounded-2xl p-6 transition-all duration-150 hover:border-stone-400 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-stone-900 focus:ring-offset-2 {{ $selectedService === $svc['name'] ? 'border-stone-900 shadow-md' : 'border-stone-200' }}"
+                class="group text-left bg-white border-2 rounded-2xl p-6 transition-all duration-150 hover:border-stone-400 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-stone-900 focus:ring-offset-2 {{ $selectedService === $svc->name ? 'border-stone-900 shadow-md' : 'border-stone-200' }}"
             >
-                <div class="w-10 h-10 bg-stone-100 group-hover:bg-stone-900 rounded-xl flex items-center justify-center mb-4 transition-colors {{ $selectedService === $svc['name'] ? 'bg-stone-900' : '' }}">
-                    <svg class="w-5 h-5 text-stone-600 group-hover:text-white transition-colors {{ $selectedService === $svc['name'] ? 'text-white' : '' }}"
+                <div class="w-10 h-10 {{ $selectedService === $svc->name ? 'bg-stone-900' : 'bg-stone-100 group-hover:bg-stone-900' }} rounded-xl flex items-center justify-center mb-4 transition-colors">
+                    <svg class="w-5 h-5 {{ $selectedService === $svc->name ? 'text-white' : 'text-stone-600 group-hover:text-white' }} transition-colors"
                          fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="{{ $svc['icon'] }}"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
+                              d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
                     </svg>
                 </div>
                 <div class="flex items-start justify-between gap-2 mb-2">
-                    <h3 class="font-semibold text-stone-900 text-sm leading-snug">{{ $svc['name'] }}</h3>
-                    <span class="shrink-0 text-xs font-bold text-stone-900 bg-stone-100 px-2 py-0.5 rounded-full">{{ $svc['price'] }}</span>
+                    <h3 class="font-semibold text-stone-900 text-sm leading-snug">{{ $svc->name }}</h3>
+                    <span class="shrink-0 text-xs font-bold text-stone-900 bg-stone-100 px-2 py-0.5 rounded-full">
+                        {{ $svc->formatted_price }}
+                    </span>
                 </div>
-                <p class="text-xs text-stone-500 leading-relaxed mb-3">{{ $svc['description'] }}</p>
-                <div class="flex items-center gap-1 text-xs text-stone-400 font-medium">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                    </svg>
-                    {{ $svc['duration'] }}
-                </div>
+                @if ($svc->description)
+                <p class="text-xs text-stone-500 leading-relaxed">{{ $svc->description }}</p>
+                @endif
             </button>
             @endforeach
         </div>
+        @endif
 
         @error('selectedService')
         <p class="mt-4 text-sm text-red-500 text-center">{{ $message }}</p>
@@ -92,17 +101,15 @@
     <div class="max-w-2xl mx-auto">
         <div class="bg-white rounded-2xl border border-stone-200 shadow-sm overflow-hidden">
 
-            @if ($this->selectedServiceDetail)
+            @if ($this->selectedServiceModel)
             <div class="px-6 pt-6 pb-0">
                 <div class="inline-flex items-center gap-2 bg-stone-50 border border-stone-100 rounded-xl px-3 py-2 text-xs text-stone-600 mb-5">
                     <svg class="w-3.5 h-3.5 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $this->selectedServiceDetail['icon'] }}"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2"/>
                     </svg>
-                    <span class="font-semibold text-stone-900">{{ $this->selectedServiceDetail['name'] }}</span>
+                    <span class="font-semibold text-stone-900">{{ $this->selectedServiceModel->name }}</span>
                     <span class="text-stone-400">·</span>
-                    <span>{{ $this->selectedServiceDetail['duration'] }}</span>
-                    <span class="text-stone-400">·</span>
-                    <span class="font-semibold">{{ $this->selectedServiceDetail['price'] }}</span>
+                    <span class="font-semibold">{{ $this->selectedServiceModel->formatted_price }}</span>
                 </div>
             </div>
             @endif
