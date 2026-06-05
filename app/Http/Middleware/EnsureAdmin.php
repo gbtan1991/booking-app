@@ -15,7 +15,7 @@ class EnsureAdmin
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (! $request->user() || ! $request->user()->isAdmin()) {
+        if (! $request->user()) {
             if ($request->expectsJson()) {
                 abort(403, 'Forbidden.');
             }

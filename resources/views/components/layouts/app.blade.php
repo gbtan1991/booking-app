@@ -32,12 +32,7 @@
                 <a href="/#services" class="hover:text-stone-900 transition-colors">Services</a>
                 <a href="{{ route('book') }}" class="hover:text-stone-900 transition-colors">Book now</a>
                 @auth
-                    @if(auth()->user()->isCustomer())
-                        <a href="{{ route('customer.dashboard') }}" class="hover:text-stone-900 transition-colors">My Bookings</a>
-                    @endif
-                    @if(auth()->user()->isAdmin())
-                        <a href="{{ route('admin.dashboard') }}" class="text-stone-400 hover:text-stone-600 transition-colors">Admin</a>
-                    @endif
+                    <a href="{{ route('admin.dashboard') }}" class="text-stone-400 hover:text-stone-600 transition-colors">Admin</a>
                     <form method="POST" action="{{ route('logout') }}" class="inline">
                         @csrf
                         <button type="submit" class="text-stone-400 hover:text-stone-600 transition-colors">Sign out</button>
@@ -48,9 +43,9 @@
             </nav>
             <div class="md:hidden flex items-center gap-2">
                 @auth
-                    <a href="{{ auth()->user()->isAdmin() ? route('admin.dashboard') : route('customer.dashboard') }}"
+                    <a href="{{ route('admin.dashboard') }}"
                        class="text-sm font-medium text-stone-600 px-3 py-2">
-                        Dashboard
+                        Admin
                     </a>
                 @else
                     <a href="{{ route('login') }}" class="text-sm font-medium text-stone-600 px-3 py-2">Sign in</a>

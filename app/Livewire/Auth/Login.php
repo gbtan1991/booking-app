@@ -43,12 +43,7 @@ class Login extends Component
         RateLimiter::clear($throttleKey);
         session()->regenerate();
 
-        $this->redirect(
-            Auth::user()->isAdmin()
-                ? route('admin.dashboard')
-                : route('customer.dashboard'),
-            navigate: true,
-        );
+        $this->redirect(route('admin.dashboard'), navigate: true);
     }
 
     public function render()
