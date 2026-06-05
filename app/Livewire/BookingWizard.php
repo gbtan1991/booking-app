@@ -13,8 +13,8 @@ use Livewire\Attributes\Validate;
 
 class BookingWizard extends Component
 {
-    // Wizard state
-    public int $step = 1;
+    // Wizard step (1–4, where 4 = success)
+    public int  $step      = 1;
     public bool $completed = false;
 
     // Step 1
@@ -33,27 +33,34 @@ class BookingWizard extends Component
     #[Validate('required|string|max:20')]
     public string $phone = '';
 
+    #[Validate('required|string')]
+    public string $service = 'General Consultation';
+
     #[Validate('nullable|string|max:500')]
     public string $notes = '';
 
-    public string $service = 'General Consultation';
-
-    public function mount(): void
-    {
-        // Pre-fill contact details if the customer is already logged in
-        if ($user = auth()->user()) {
-            $this->name  = $user->name;
-            $this->email = $user->email;
-        }
-    }
-
-    // All available slots the business offers
-    protected array $allSlots = [
+    // Kept as a const so it's available in every request context
+    // including inside DB::transaction() closures
+    public const SLOTS = [
         '08:00', '08:30', '09:00', '09:30', '10:00', '10:30',
         '11:00', '11:30', '12:00', '12:30', '13:00', '13:30',
         '14:00', '14:30', '15:00', '15:30', '16:00', '16:30',
         '17:00',
     ];
+
+    public const SERVICES = [
+        'General Consultation',
+        'Strategy Session',
+        'Quick Review',
+    ];
+
+    public function mount(): void
+    {
+        if ($user = auth()->user()) {
+            $this->name  = $user->name;
+            $this->email = $user->email;
+        }
+    }
 
     #[Computed]
     public function availableSlots(): array
@@ -65,7 +72,7 @@ class BookingWizard extends Component
         $booked = Booking::bookedSlotsForDate($this->selectedDate);
 
         return array_values(array_filter(
-            $this->allSlots,
+            self::SLOTS,
             fn ($slot) => ! in_array($slot, $booked, true)
         ));
     }
@@ -74,13 +81,12 @@ class BookingWizard extends Component
     public function calendarDays(): array
     {
         $today = now()->startOfDay();
-        $days = [];
+        $days  = [];
 
         for ($i = 1; $i <= 30; $i++) {
             $day = $today->copy()->addDays($i);
-            // Skip Sundays (0) for Swiss-style business hours
             if ($day->dayOfWeek === 0) {
-                continue;
+                continue; // skip Sundays
             }
             $days[] = [
                 'value'   => $day->format('Y-m-d'),
@@ -98,7 +104,6 @@ class BookingWizard extends Component
     {
         $this->selectedDate = $date;
         $this->selectedSlot = '';
-        // Invalidate computed cache so slots refresh
         unset($this->availableSlots);
     }
 
@@ -125,69 +130,73 @@ class BookingWizard extends Component
 
     public function submitBooking(): void
     {
-        // Rate limiting: max 5 submissions per IP per 10 minutes
-        $key = 'booking:' . request()->ip();
+        // Rate limit: 5 submissions per IP per 10 minutes
+        $rateLimitKey = 'booking:' . request()->ip();
 
-        if (RateLimiter::tooManyAttempts($key, 5)) {
-            $seconds = RateLimiter::availableIn($key);
+        if (RateLimiter::tooManyAttempts($rateLimitKey, 5)) {
+            $seconds = RateLimiter::availableIn($rateLimitKey);
             $this->addError('rate_limit', "Too many requests. Try again in {$seconds} seconds.");
             return;
         }
 
+        // Validate contact fields
         $this->validate();
 
-        // Re-validate date/slot at submission time
-        $validator = Validator::make(
+        // Hard-validate date + slot server-side (prevents tampered Livewire state)
+        $extra = Validator::make(
             ['booking_date' => $this->selectedDate, 'time_slot' => $this->selectedSlot],
             [
                 'booking_date' => ['required', 'date', 'after:today'],
-                'time_slot'    => ['required', 'string', 'in:' . implode(',', $this->allSlots)],
+                'time_slot'    => ['required', 'string', 'in:' . implode(',', self::SLOTS)],
             ]
         );
 
-        if ($validator->fails()) {
-            $this->addError('selectedDate', 'Invalid date or time slot selected.');
+        if ($extra->fails()) {
+            $this->addError('selectedDate', 'Invalid date or time slot. Please start again.');
             $this->step = 1;
             return;
         }
 
+        // Atomically check slot availability and insert
         try {
             DB::transaction(function () {
-                // Pessimistic lock: prevents race conditions on the same slot
                 $conflict = Booking::where('booking_date', $this->selectedDate)
                     ->where('time_slot', $this->selectedSlot)
                     ->whereIn('status', ['pending', 'approved'])
                     ->lockForUpdate()
-                    ->first();
+                    ->exists();
 
                 if ($conflict) {
                     throw ValidationException::withMessages([
-                        'selectedSlot' => 'This slot was just taken. Please choose another.',
+                        'selectedSlot' => 'This slot was just taken. Please choose another time.',
                     ]);
                 }
 
                 Booking::create([
-                    'user_id'      => auth()->id(), // null for guests
+                    'user_id'      => auth()->id(),
                     'name'         => strip_tags($this->name),
                     'email'        => $this->email,
-                    'phone'        => $this->phone,
+                    'phone'        => strip_tags($this->phone),
                     'booking_date' => $this->selectedDate,
                     'time_slot'    => $this->selectedSlot,
                     'service'      => $this->service,
-                    'notes'        => strip_tags($this->notes),
+                    'notes'        => strip_tags($this->notes ?? ''),
                     'status'       => 'pending',
                 ]);
             });
         } catch (ValidationException $e) {
-            $this->addError('selectedSlot', $e->getMessage());
+            // Forward slot-conflict message back to the view
+            foreach ($e->errors() as $field => $messages) {
+                $this->addError($field, $messages[0]);
+            }
             $this->step = 2;
             return;
         }
 
-        RateLimiter::hit($key, 600);
+        RateLimiter::hit($rateLimitKey, 600);
 
         $this->completed = true;
-        $this->step = 4;
+        $this->step      = 4;
     }
 
     public function render()

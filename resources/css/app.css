@@ -7,17 +7,10 @@
 @theme {
     --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
-
-    --color-stone-50: oklch(0.985 0.002 75);
-    --color-stone-100: oklch(0.968 0.004 75);
-    --color-stone-200: oklch(0.923 0.006 75);
-    --color-stone-400: oklch(0.706 0.016 75);
-    --color-stone-500: oklch(0.575 0.018 75);
-    --color-stone-600: oklch(0.482 0.018 75);
-    --color-stone-700: oklch(0.408 0.018 75);
-    --color-stone-800: oklch(0.325 0.016 75);
-    --color-stone-900: oklch(0.216 0.012 75);
 }
 
-/* Smooth wire:loading transitions */
-[wire\:loading] { transition: opacity 200ms ease; }
+/* Hide Alpine-controlled elements until JS initialises (prevents flash) */
+[x-cloak] { display: none !important; }
+
+/* Smooth wire:loading opacity transitions */
+[wire\:loading] { transition: opacity 150ms ease; }
