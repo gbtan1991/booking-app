@@ -1,58 +1,112 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# SwissBook — TALL Stack Booking MVP
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+A production-grade appointment booking system built with **Laravel 13**, **Livewire v3**, **Alpine.js**, and **Tailwind CSS v4**.
 
-## About Laravel
+## Requirements
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+| Tool | Version |
+|---|---|
+| PHP | **8.3+** (tested on 8.3.31) |
+| Composer | 2.x |
+| Node.js | 18+ |
+| MySQL | 8.0+ (via XAMPP, Laragon, or Herd) |
+| Apache or php artisan serve | any |
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+---
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## Local Setup (Windows — XAMPP / Laragon / Herd)
 
-## Learning Laravel
-
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
-
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
-
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
-
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+### 1. Clone & install dependencies
 
 ```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+git clone <repo-url> swissbook
+cd swissbook
+composer install
+npm install
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+### 2. Configure environment
 
-## Contributing
+```bash
+copy .env.example .env
+php artisan key:generate
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+Open `.env` and set your MySQL credentials:
 
-## Code of Conduct
+```env
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=swissbook
+DB_USERNAME=root
+DB_PASSWORD=          # leave blank for XAMPP default
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+Create the database first in phpMyAdmin or MySQL CLI:
 
-## Security Vulnerabilities
+```sql
+CREATE DATABASE swissbook CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+### 3. Run migrations
 
-## License
+```bash
+php artisan migrate
+```
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+### 4. Build frontend assets
+
+```bash
+npm run build
+```
+
+### 5. Start the dev server
+
+```bash
+php artisan serve
+```
+
+Visit **http://localhost:8000** for the public booking page.
+Visit **http://localhost:8000/admin** for the admin dashboard (HTTP Basic Auth — uses the `users` table).
+
+---
+
+## Development (hot reload)
+
+Run these two commands in separate terminals:
+
+```bash
+# Terminal 1
+php artisan serve
+
+# Terminal 2
+npm run dev
+```
+
+---
+
+## Key Files
+
+| Path | Description |
+|---|---|
+| `app/Models/Booking.php` | Eloquent model with soft deletes, scopes |
+| `database/migrations/…create_bookings_table.php` | Schema with composite MySQL indexes |
+| `app/Livewire/BookingWizard.php` | 3-step public booking wizard |
+| `app/Livewire/Admin/BookingDashboard.php` | Admin panel with live filters |
+| `resources/views/pages/home.blade.php` | Public landing page |
+| `resources/views/layouts/app.blade.php` | Public layout |
+| `resources/views/layouts/admin.blade.php` | Admin layout |
+
+---
+
+## Security Features
+
+- CSRF protection on all Livewire requests
+- `DB::transaction()` + `lockForUpdate()` prevents double-booking race conditions
+- `RateLimiter` — 5 booking attempts per IP per 10 minutes
+- Strict `$fillable` on `Booking` model (Mass Assignment protected)
+- `strip_tags()` on all free-text inputs
+- `auth.basic` middleware on `/admin` routes
+</content>
+</invoke>
