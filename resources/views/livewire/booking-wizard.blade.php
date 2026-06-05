@@ -118,20 +118,33 @@
                 @foreach ($grouped as $month => $days)
                 <div class="mb-6">
                     <p class="text-xs font-bold uppercase tracking-widest text-stone-400 mb-3">{{ $month }}</p>
-                    <div class="grid grid-cols-6 sm:grid-cols-8 lg:grid-cols-10 gap-2">
+                    {{-- 7-col calendar-week grid: Mon→Sun header row, then date cells --}}
+                    <div class="grid grid-cols-7 gap-1.5">
+                        @foreach (['M','T','W','T','F','S','S'] as $h)
+                        <div class="text-center text-[10px] font-bold text-stone-300 uppercase pb-1">{{ $h }}</div>
+                        @endforeach
+
+                        @php
+                            // Pad the first week so Monday = col 1
+                            $firstDay = \Carbon\Carbon::parse($days->first()['value'])->dayOfWeekIso; // 1=Mon…7=Sun
+                            $padCols  = $firstDay - 1;
+                        @endphp
+                        @for ($p = 0; $p < $padCols; $p++)
+                        <div></div>
+                        @endfor
+
                         @foreach ($days as $day)
                         <button
                             type="button"
                             wire:click="selectDate('{{ $day['value'] }}')"
                             wire:key="day-{{ $day['value'] }}"
                             @class([
-                                'flex flex-col items-center gap-0.5 py-2.5 rounded-xl border text-center transition-all duration-100 cursor-pointer focus:outline-none focus:ring-2 focus:ring-stone-900 focus:ring-offset-1',
+                                'flex flex-col items-center gap-0.5 py-2 rounded-xl border text-center transition-all duration-100 cursor-pointer focus:outline-none focus:ring-2 focus:ring-stone-900 focus:ring-offset-1 w-full',
                                 'border-stone-900 bg-stone-900 text-white shadow-md' => $selectedDate === $day['value'],
                                 'border-stone-200 text-stone-700 hover:border-stone-400 hover:bg-stone-50' => $selectedDate !== $day['value'] && !$day['weekend'],
                                 'border-stone-100 text-stone-400 hover:border-stone-200' => $selectedDate !== $day['value'] && $day['weekend'],
                             ])
                         >
-                            <span class="text-[9px] font-bold uppercase tracking-wider leading-none opacity-60">{{ $day['label'] }}</span>
                             <span class="text-sm font-bold leading-tight">{{ $day['day'] }}</span>
                         </button>
                         @endforeach
@@ -186,7 +199,7 @@
                 </p>
 
                 @if (count($this->availableTimes) > 0)
-                <div class="grid grid-cols-4 sm:grid-cols-5 gap-2">
+                <div class="grid grid-cols-3 gap-2">
                     @foreach ($this->availableTimes as $slot)
                     <button
                         type="button"
@@ -346,44 +359,64 @@
     {{-- ══════════════════════════ STEP 5 — SUCCESS ══════════════════════════ --}}
     @elseif ($step === 5)
     <div class="max-w-lg mx-auto">
-        <div class="bg-white rounded-2xl border border-stone-200 shadow-sm p-10 text-center">
-            <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                </svg>
-            </div>
-            <h2 class="text-2xl font-bold text-stone-900 mb-2">You're booked!</h2>
-            <p class="text-stone-500 text-sm mb-6">We'll confirm your appointment shortly.</p>
+        <div class="bg-white rounded-2xl border border-stone-200 shadow-sm overflow-hidden">
 
-            <div class="bg-stone-50 border border-stone-100 rounded-xl p-5 text-left space-y-2.5 mb-8 text-sm">
-                <div class="flex justify-between">
-                    <span class="text-stone-500">Service</span>
-                    <span class="font-semibold text-stone-900">{{ $selectedService }}</span>
+            {{-- Green top accent --}}
+            <div class="h-1.5 bg-gradient-to-r from-green-400 to-emerald-500"></div>
+
+            <div class="p-8 sm:p-10 text-center">
+
+                {{-- Animated checkmark --}}
+                <div class="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-6 ring-8 ring-green-50">
+                    <svg class="w-10 h-10 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                    </svg>
                 </div>
-                <div class="flex justify-between">
-                    <span class="text-stone-500">Date</span>
-                    <span class="font-semibold text-stone-900">{{ \Carbon\Carbon::parse($selectedDate)->format('l, j F Y') }}</span>
+
+                <h2 class="text-2xl font-bold text-stone-900 mb-2">Booking Confirmed!</h2>
+                <p class="text-stone-500 text-sm leading-relaxed mb-8">
+                    Thank you, <span class="font-semibold text-stone-700">{{ $customer_name }}</span>.<br>
+                    We look forward to seeing you. A confirmation will be sent to<br>
+                    <span class="font-semibold text-stone-700">{{ $customer_email }}</span>.
+                </p>
+
+                {{-- Booking summary card --}}
+                <div class="bg-stone-50 border border-stone-100 rounded-2xl p-5 text-left space-y-3 mb-8">
+                    <div class="flex justify-between items-center text-sm">
+                        <span class="text-stone-400 font-medium">Service</span>
+                        <span class="font-semibold text-stone-900">{{ $selectedService }}</span>
+                    </div>
+                    <div class="border-t border-stone-100"></div>
+                    <div class="flex justify-between items-center text-sm">
+                        <span class="text-stone-400 font-medium">Date</span>
+                        <span class="font-semibold text-stone-900">{{ \Carbon\Carbon::parse($selectedDate)->format('l, j F Y') }}</span>
+                    </div>
+                    <div class="border-t border-stone-100"></div>
+                    <div class="flex justify-between items-center text-sm">
+                        <span class="text-stone-400 font-medium">Time</span>
+                        <span class="font-semibold text-stone-900">{{ $selectedTime }}</span>
+                    </div>
+                    <div class="border-t border-stone-100"></div>
+                    <div class="flex justify-between items-center text-sm">
+                        <span class="text-stone-400 font-medium">Status</span>
+                        <span class="inline-flex items-center gap-1.5 text-xs font-bold text-green-700 bg-green-100 px-2.5 py-1 rounded-full">
+                            <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+                            Confirmed
+                        </span>
+                    </div>
                 </div>
-                <div class="flex justify-between">
-                    <span class="text-stone-500">Time</span>
-                    <span class="font-semibold text-stone-900">{{ $selectedTime }}</span>
-                </div>
-                <div class="flex justify-between">
-                    <span class="text-stone-500">Name</span>
-                    <span class="font-semibold text-stone-900">{{ $customer_name }}</span>
-                </div>
-                <div class="border-t border-stone-200 pt-2.5 flex justify-between">
-                    <span class="text-stone-500">Status</span>
-                    <span class="inline-flex items-center gap-1 text-amber-700 font-semibold">
-                        <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span> Pending confirmation
-                    </span>
+
+                <div class="flex flex-col sm:flex-row gap-3 justify-center">
+                    <a href="{{ route('book') }}"
+                       class="inline-flex items-center justify-center gap-2 border border-stone-200 text-stone-700 px-6 py-3 rounded-full text-sm font-semibold hover:bg-stone-50 transition-all">
+                        Book another
+                    </a>
+                    <a href="{{ route('home') }}"
+                       class="inline-flex items-center justify-center gap-2 bg-stone-900 text-white px-6 py-3 rounded-full text-sm font-semibold hover:bg-stone-700 transition-all">
+                        Back to home
+                    </a>
                 </div>
             </div>
-
-            <a href="{{ route('home') }}"
-               class="inline-flex items-center gap-2 bg-stone-900 text-white px-6 py-3 rounded-full text-sm font-semibold hover:bg-stone-700 transition-all">
-                Back to home
-            </a>
         </div>
     </div>
     @endif

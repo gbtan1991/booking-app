@@ -1,3 +1,1 @@
-import Alpine from 'alpinejs';
-window.Alpine = Alpine;
-Alpine.start();
+// Alpine is bundled and started by Livewire — do not import or start it here.
