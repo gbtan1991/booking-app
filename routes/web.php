@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 
 // ── Public ────────────────────────────────────────────────────────────────
 Route::get('/', fn () => view('pages.home'))->name('home');
+Route::get('/book', \App\Livewire\BookingWizard::class)->name('book');
 
 // ── Auth ──────────────────────────────────────────────────────────────────
 Route::middleware('guest')->group(function () {

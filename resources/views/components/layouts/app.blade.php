@@ -30,7 +30,7 @@
             <nav class="hidden md:flex items-center gap-6 text-sm font-medium text-stone-600">
                 <a href="/#how-it-works" class="hover:text-stone-900 transition-colors">How it works</a>
                 <a href="/#services" class="hover:text-stone-900 transition-colors">Services</a>
-                <a href="/#booking" class="hover:text-stone-900 transition-colors">Book now</a>
+                <a href="{{ route('book') }}" class="hover:text-stone-900 transition-colors">Book now</a>
                 @auth
                     @if(auth()->user()->isCustomer())
                         <a href="{{ route('customer.dashboard') }}" class="hover:text-stone-900 transition-colors">My Bookings</a>
@@ -55,7 +55,7 @@
                 @else
                     <a href="{{ route('login') }}" class="text-sm font-medium text-stone-600 px-3 py-2">Sign in</a>
                 @endauth
-                <a href="/#booking" class="text-sm font-medium bg-stone-900 text-white px-4 py-2 rounded-full">
+                <a href="{{ route('book') }}" class="text-sm font-medium bg-stone-900 text-white px-4 py-2 rounded-full">
                     Book
                 </a>
             </div>
