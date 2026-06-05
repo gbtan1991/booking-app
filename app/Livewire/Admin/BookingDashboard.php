@@ -99,7 +99,7 @@ class BookingDashboard extends Component
 
         return view('livewire.admin.booking-dashboard', [
             'bookings' => $query->paginate(15),
-        ])->layout('layouts.admin');
+        ])->layout('components.layouts.admin');
     }
 }
 
