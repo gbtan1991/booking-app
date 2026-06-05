@@ -1,6 +1,6 @@
 <div>
     {{-- ══════════════════════════ HEADER ══════════════════════════ --}}
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <div>
             <h1 class="text-xl font-bold text-stone-900">Bookings</h1>
             <p class="text-sm text-stone-500 mt-0.5">Manage all customer appointments</p>
@@ -15,7 +15,7 @@
     </div>
 
     {{-- ══════════════════════════ STATS CARDS ══════════════════════════ --}}
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <div class="bg-white rounded-2xl border border-stone-200 p-5">
             <p class="text-xs font-semibold uppercase tracking-wider text-stone-400 mb-2">Current</p>
             <p class="text-3xl font-bold text-stone-900">{{ $this->counts['current'] }}</p>

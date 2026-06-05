@@ -14,7 +14,7 @@
 
 <div class="flex h-full min-h-screen">
     {{-- Sidebar --}}
-    <aside class="hidden md:flex flex-col w-60 bg-stone-900 text-white shrink-0">
+    <aside class="hidden md:flex flex-col w-64 bg-stone-900 text-white shrink-0">
         <div class="h-16 flex items-center px-6 border-b border-stone-700">
             <span class="font-semibold tracking-tight">SwissBook Admin</span>
         </div>
@@ -62,7 +62,7 @@
             </div>
         </header>
 
-        <main class="flex-1 p-4 sm:p-6 lg:p-8 overflow-auto">
+        <main class="flex-1 p-6 sm:p-8 lg:p-10 overflow-auto">
             {{ $slot }}
         </main>
     </div>

@@ -8,7 +8,7 @@
     {{-- ══════════════════════════ PROGRESS BAR ══════════════════════════ --}}
     @if ($step < 5)
     @php $steps = ['Service', 'Date', 'Time', 'Details']; @endphp
-    <div class="flex items-center gap-2 mb-8 max-w-lg mx-auto px-2">
+    <div class="flex items-center gap-2 mt-10 mb-10 max-w-lg mx-auto px-2">
         @foreach ($steps as $i => $label)
             @php $num = $i + 1; @endphp
             <div class="flex flex-col items-center gap-1 flex-shrink-0">
@@ -46,10 +46,10 @@
 
     {{-- ══════════════════════════ STEP 1 — SERVICE ══════════════════════════ --}}
     @if ($step === 1)
-    <div>
-        <div class="text-center mb-8">
-            <h2 class="text-2xl font-bold text-stone-900">What can we help you with?</h2>
-            <p class="text-stone-500 text-sm mt-2">Choose the service that best fits your needs.</p>
+    <div class="max-w-4xl mx-auto px-2">
+        <div class="text-center mb-10">
+            <h2 class="text-2xl sm:text-3xl font-bold text-stone-900">What can we help you with?</h2>
+            <p class="text-stone-500 text-sm mt-3">Choose the service that best fits your needs.</p>
         </div>
 
         @if ($this->services->isEmpty())
@@ -61,7 +61,7 @@
             <p class="text-xs mt-1">Please check back soon.</p>
         </div>
         @else
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             @foreach ($this->services as $svc)
             <button
                 type="button"
